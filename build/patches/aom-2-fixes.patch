@@ -160,7 +160,7 @@ diff --git a/av1/encoder/encoder.c b/av1/encoder/encoder.c
 index 1111111..2222222 100644
 --- a/av1/encoder/encoder.c
 +++ b/av1/encoder/encoder.c
-@@ -6551,6 +6551,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
+@@ -6557,6 +6557,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
    return AOM_CODEC_OK;
  }
  

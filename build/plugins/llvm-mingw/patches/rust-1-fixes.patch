@@ -45,7 +45,7 @@ diff --git a/compiler/rustc_target/src/spec/mod.rs b/compiler/rustc_target/src/s
 index 1111111..2222222 100644
 --- a/compiler/rustc_target/src/spec/mod.rs
 +++ b/compiler/rustc_target/src/spec/mod.rs
-@@ -586,10 +586,12 @@ supported_targets! {
+@@ -596,10 +596,12 @@ supported_targets! {
  
      ("x86_64-unknown-illumos", x86_64_unknown_illumos),
  
@@ -151,7 +151,7 @@ index 1111111..2222222 100644
 +    late_link_args_static.insert(LinkerFlavor::Gcc, static_unwind_libs);
  
      TargetOptions {
-         target_os: "windows".to_string(),
+         os: "windows".to_string(),
 
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Kleis Auke Wolthuizen <github@kleisauke.nl>

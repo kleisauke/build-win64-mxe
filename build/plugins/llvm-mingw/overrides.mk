@@ -3,7 +3,7 @@ $(PLUGIN_HEADER)
 IS_LLVM := $(true)
 
 # Override sub-dependencies
-cc_DEPS   := llvm
+cc_DEPS := llvm
 
 # GCC does not support Windows on ARM
 gcc_BUILD_aarch64-w64-mingw32 =

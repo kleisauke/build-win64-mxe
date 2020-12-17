@@ -12,12 +12,12 @@ diff --git a/cmake/modules/PopplerMacros.cmake b/cmake/modules/PopplerMacros.cma
 index 1111111..2222222 100644
 --- a/cmake/modules/PopplerMacros.cmake
 +++ b/cmake/modules/PopplerMacros.cmake
-@@ -123,7 +123,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
+@@ -104,7 +104,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
    set(DEFAULT_COMPILE_WARNINGS_EXTRA "${_warn} ${_warnx}")
  
    set(_save_cxxflags "${CMAKE_CXX_FLAGS}")
--  set(CMAKE_CXX_FLAGS                "-fno-exceptions -fno-check-new -fno-common -D_DEFAULT_SOURCE ${_save_cxxflags}")
-+  set(CMAKE_CXX_FLAGS                "-fno-check-new -fno-common -D_DEFAULT_SOURCE ${_save_cxxflags}")
+-  set(CMAKE_CXX_FLAGS                "-fno-exceptions -fno-check-new -fno-common -fno-operator-names -D_DEFAULT_SOURCE ${_save_cxxflags}")
++  set(CMAKE_CXX_FLAGS                "-fno-check-new -fno-common -fno-operator-names -D_DEFAULT_SOURCE ${_save_cxxflags}")
    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g ${_save_cxxflags}")
    set(CMAKE_CXX_FLAGS_RELEASE        "-O2 -DNDEBUG ${_save_cxxflags}")
    set(CMAKE_CXX_FLAGS_DEBUG          "-g -O2 -fno-reorder-blocks -fno-schedule-insns -fno-inline ${_save_cxxflags}")

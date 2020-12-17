@@ -2,8 +2,9 @@ PKG             := rust
 $(PKG)_WEBSITE  := https://www.rust-lang.org/
 $(PKG)_DESCR    := A systems programming language focused on safety, speed and concurrency.
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 1.47.0
-$(PKG)_CHECKSUM := d0e11e1756a072e8e246b05d54593402813d047d12e44df281fbabda91035d96
+# https://static.rust-lang.org/dist/rust-1.48.0-x86_64-unknown-linux-gnu.tar.gz.sha256
+$(PKG)_VERSION  := 1.48.0
+$(PKG)_CHECKSUM := 950420a35b2dd9091f1b93a9ccd5abc026ca7112e667f246b1deb79204e2038b
 $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)-x86_64-unknown-linux-gnu
 $(PKG)_FILE     := $(PKG)-$($(PKG)_VERSION)-x86_64-unknown-linux-gnu.tar.gz
 $(PKG)_URL      := https://static.rust-lang.org/dist/$($(PKG)_FILE)

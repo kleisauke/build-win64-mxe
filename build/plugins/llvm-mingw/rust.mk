@@ -2,19 +2,17 @@ PKG             := rust
 $(PKG)_WEBSITE  := https://www.rust-lang.org/
 $(PKG)_DESCR    := A systems programming language focused on safety, speed and concurrency.
 $(PKG)_IGNORE   :=
-# https://static.rust-lang.org/dist/2020-11-09/rustc-nightly-src.tar.gz.sha256
+# https://static.rust-lang.org/dist/2020-12-17/rustc-nightly-src.tar.gz.sha256
 $(PKG)_VERSION  := nightly
-$(PKG)_CHECKSUM := 3cca76e6313f5147334ca89cc372ab2be9516d2c631bd8d6bd5bbcb2948dea0f
+$(PKG)_CHECKSUM := c2fe6cdaf4cd79e7b71c25224b42c521fa8841241f942bc6888589fa838e6433
 $(PKG)_PATCHES  := $(realpath $(sort $(wildcard $(dir $(lastword $(MAKEFILE_LIST)))/patches/$(PKG)-[0-9]*.patch)))
 $(PKG)_SUBDIR   := $(PKG)c-$($(PKG)_VERSION)-src
 $(PKG)_FILE     := $(PKG)c-$($(PKG)_VERSION)-src.tar.gz
-$(PKG)_URL      := https://static.rust-lang.org/dist/2020-11-09/$($(PKG)_FILE)
+$(PKG)_URL      := https://static.rust-lang.org/dist/2020-12-17/$($(PKG)_FILE)
 $(PKG)_DEPS     := $(BUILD)~$(PKG)
 $(PKG)_TARGETS  := $(BUILD) $(MXE_TARGETS)
 
 $(PKG)_DEPS_$(BUILD) := $(BUILD)~llvm
-
-export RUST_TARGET_PATH := $(dir $(lastword $(MAKEFILE_LIST)))/rust
 
 # Build Rust from source to support the ARM targets and
 # to ensure that it links against UCRT (the prebuilt Rust
@@ -39,7 +37,7 @@ define $(PKG)_BUILD_$(BUILD)
         --tools=cargo,src \
         --disable-docs \
         --disable-codegen-tests \
-        --python='$(PYTHON2)' \
+        --python='$(PYTHON)' \
         --llvm-root='$(PREFIX)/$(BUILD)' \
         --set target.$(BUILD_RUST).cc='$(BUILD_CC)' \
         --set target.$(BUILD_RUST).cxx='$(BUILD_CXX)' \
@@ -53,11 +51,11 @@ define $(PKG)_BUILD_$(BUILD)
 
     # Build Rust
     cd '$(BUILD_DIR)' && \
-        $(PYTHON2) $(SOURCE_DIR)/x.py build -j '$(JOBS)' -v
+        $(PYTHON) $(SOURCE_DIR)/x.py build -j '$(JOBS)' -v
 
     # Install Rust
     cd '$(BUILD_DIR)' && \
-        $(PYTHON2) $(SOURCE_DIR)/x.py install --keep-stage 1 -j '$(JOBS)' -v
+        $(PYTHON) $(SOURCE_DIR)/x.py install --keep-stage 1 -j '$(JOBS)' -v
 
     # Disable networking (again) for reproducible builds further on
     $(BUILD_CC) -shared -fPIC $(NONET_CFLAGS) -o $(NONET_LIB) $(TOP_DIR)/tools/nonetwork.c
@@ -107,8 +105,7 @@ define $(PKG)_BUILD
 
     # Build and prepare startup objects like rsbegin.o and rsend.o
     $(foreach FILE, rsbegin rsend, \
-        RUSTC_BOOTSTRAP=1 \
-        $(PREFIX)/$(BUILD)/bin/rustc --cfg bootstrap --target $(TARGET_RUST) --emit=obj -o '$(BUILD_DIR)/$(FILE).o' \
+        $(PREFIX)/$(BUILD)/bin/rustc --target $(TARGET_RUST) --emit=obj -o '$(BUILD_DIR)/$(FILE).o' \
             '$(PREFIX)/$(BUILD)/lib/rustlib/src/rust/library/rtstartup/$(FILE).rs';)
 
     # Build the standard library

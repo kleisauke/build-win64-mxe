@@ -2,7 +2,7 @@
 
 vips_package=vips
 vips_version=8.10
-vips_patch_version=2
+vips_patch_version=4
 #vips_pre_version=rc2
 
 # build-win64-mxe/build dir we are building
