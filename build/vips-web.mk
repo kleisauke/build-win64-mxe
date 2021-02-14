@@ -2,9 +2,9 @@ PKG             := vips-web
 $(PKG)_WEBSITE  := https://libvips.github.io/libvips/
 $(PKG)_DESCR    := A fast image processing library with low memory needs.
 $(PKG)_IGNORE   :=
-# https://github.com/kleisauke/libvips/tarball/01c07ea0a8d41ed0eefbe276aa439180d324f2b6
-$(PKG)_VERSION  := 01c07ea
-$(PKG)_CHECKSUM := f960e072c99c8f86e1d1c6287b172b0b150dae7d2b89dda15088bbc6276a0e9c
+# https://github.com/kleisauke/libvips/tarball/c45c53deead03db4750243c95203b0924cda1aec
+$(PKG)_VERSION  := c45c53d
+$(PKG)_CHECKSUM := a57749b124051cb154464a63f289a807094bcd87bb4c1334ba15c99bfa201b58
 $(PKG)_PATCHES  := $(realpath $(sort $(wildcard $(dir $(lastword $(MAKEFILE_LIST)))/patches/vips-[0-9]*.patch)))
 $(PKG)_GH_CONF  := kleisauke/libvips/branches/openslide-module
 $(PKG)_DEPS     := cc libwebp librsvg giflib glib pango libgsf \
@@ -76,6 +76,7 @@ define $(PKG)_BUILD
         --without-imagequant \
         --disable-introspection \
         --disable-deprecated \
+        --disable-modules \
         $(if $(BUILD_STATIC), lt_cv_deplibs_check_method="pass_all")
 
     # libtool should automatically generate a list

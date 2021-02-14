@@ -2,9 +2,9 @@ PKG             := vips-all
 $(PKG)_WEBSITE  := https://libvips.github.io/libvips/
 $(PKG)_DESCR    := A fast image processing library with low memory needs.
 $(PKG)_IGNORE   :=
-# https://github.com/kleisauke/libvips/tarball/01c07ea0a8d41ed0eefbe276aa439180d324f2b6
-$(PKG)_VERSION  := 01c07ea
-$(PKG)_CHECKSUM := f960e072c99c8f86e1d1c6287b172b0b150dae7d2b89dda15088bbc6276a0e9c
+# https://github.com/kleisauke/libvips/tarball/c45c53deead03db4750243c95203b0924cda1aec
+$(PKG)_VERSION  := c45c53d
+$(PKG)_CHECKSUM := a57749b124051cb154464a63f289a807094bcd87bb4c1334ba15c99bfa201b58
 $(PKG)_PATCHES  := $(realpath $(sort $(wildcard $(dir $(lastword $(MAKEFILE_LIST)))/patches/vips-[0-9]*.patch)))
 $(PKG)_GH_CONF  := kleisauke/libvips/branches/openslide-module
 $(PKG)_DEPS     := cc matio libwebp librsvg giflib poppler glib pango fftw \
@@ -71,7 +71,8 @@ define $(PKG)_BUILD
         --without-pdfium \
         --without-imagequant \
         --disable-introspection \
-        --disable-deprecated
+        --disable-deprecated \
+        --with-heif=$(if $(IS_HEVC),module,yes)
 
     # remove -nostdlib from linker commandline options
     # https://debbugs.gnu.org/cgi/bugreport.cgi?bug=27866
