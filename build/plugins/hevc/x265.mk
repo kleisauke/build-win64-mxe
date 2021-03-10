@@ -72,7 +72,7 @@ define $(PKG)_BUILD
         -DLINKED_12BIT=ON \
         $(if $(IS_ARM), -DCROSS_COMPILE_ARM=ON)
 
-    $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' install
+    $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(subst -,/,$(INSTALL_STRIP_LIB))
 
     $(if $(BUILD_SHARED), \
         rm -f '$(PREFIX)/$(TARGET)/lib/libx265.a' && \

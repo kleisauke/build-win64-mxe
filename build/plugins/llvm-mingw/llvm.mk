@@ -56,7 +56,7 @@ define $(PKG)_BUILD_$(BUILD)
         -DLLDB_ENABLE_LUA=OFF \
         -DLLDB_INCLUDE_TESTS=OFF
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install/strip
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_TOOLCHAIN))
 endef
 
 # llvm requires being built in a monorepo layout with
@@ -97,7 +97,7 @@ define $(PKG)_BUILD
         -DCMAKE_CXX_FLAGS='$(CXXFLAGS) -Wno-dll-attribute-on-redeclaration' \
         -DCMAKE_C_FLAGS='$(CFLAGS) -Wno-dll-attribute-on-redeclaration'
     $(MAKE) -C '$(BUILD_DIR).libunwind' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR).libunwind' -j 1 install/strip
+    $(MAKE) -C '$(BUILD_DIR).libunwind' -j 1 $(subst -,/,$(INSTALL_STRIP_TOOLCHAIN))
 
     $(if $(BUILD_SHARED), \
         cp '$(BUILD_DIR).libunwind/lib/libunwind.dll' '$(PREFIX)/$(TARGET)/bin')
@@ -155,7 +155,7 @@ define $(PKG)_BUILD
     $(MAKE) -C '$(BUILD_DIR).libcxxabi' -j '$(JOBS)'
 
     $(MAKE) -C '$(BUILD_DIR).libcxx' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR).libcxx' -j 1 install/strip
+    $(MAKE) -C '$(BUILD_DIR).libcxx' -j 1 $(subst -,/,$(INSTALL_STRIP_TOOLCHAIN))
 
     $(if $(BUILD_STATIC), \
         $(TARGET)-ar qcsL \

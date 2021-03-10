@@ -13,7 +13,7 @@ define $(PKG)_BUILD
     '$(TARGET)-meson' \
         --default-library=static \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --includedir='include' \
         -Dc_args='-DG_INTL_STATIC_COMPILATION' \

@@ -271,7 +271,7 @@ define gettext_BUILD
         --disable-nls \
         CONFIG_SHELL=$(SHELL)
     $(MAKE) -C '$(BUILD_DIR)/intl' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)/intl' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)/intl' -j 1 $(INSTALL_STRIP_LIB)
 endef
 
 # disable version script on llvm-mingw
@@ -290,13 +290,13 @@ define libffi_BUILD
         CPPFLAGS="$(if $(BUILD_STATIC),-DFFI_BUILDING,-DFFI_BUILDING_DLL)"
 
     # ensure dependencies of libffi doesn't link
-    # with __declspec(dllimport) when building a 
+    # with __declspec(dllimport) when building a
     # statically linked binary
     $(if $(BUILD_STATIC),
         $(SED) -i 's/^Cflags:.*/& -DFFI_BUILDING/' '$(BUILD_DIR)/libffi.pc')
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB)
 
     '$(TARGET)-gcc' \
         -W -Wall -Werror -std=c99 -pedantic \
@@ -310,7 +310,7 @@ endef
 define harfbuzz_BUILD
     '$(TARGET)-meson' \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --bindir='bin' \
         --libexecdir='bin' \
@@ -361,14 +361,14 @@ define libgsf_BUILD
         --without-libintl-prefix \
         PKG_CONFIG='$(PREFIX)/bin/$(TARGET)-pkg-config'
     $(MAKE) -C '$(BUILD_DIR)'     -j '$(JOBS)' install-pkgconfigDATA $(MXE_DISABLE_PROGRAMS)
-    $(MAKE) -C '$(BUILD_DIR)/gsf' -j 1 install $(MXE_DISABLE_PROGRAMS)
+    $(MAKE) -C '$(BUILD_DIR)/gsf' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_PROGRAMS)
 endef
 
 # build with the Meson build system
 define gdk-pixbuf_BUILD
     '$(TARGET)-meson' \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --bindir='bin' \
         --libexecdir='bin' \
@@ -389,7 +389,7 @@ define pixman_BUILD
 
     '$(TARGET)-meson' \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --bindir='bin' \
         --libexecdir='bin' \
@@ -406,7 +406,7 @@ endef
 define fribidi_BUILD
     '$(TARGET)-meson' \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --bindir='bin' \
         --libexecdir='bin' \
@@ -429,7 +429,7 @@ define lcms_BUILD
         --with-zlib \
         CPPFLAGS="$(if $(BUILD_SHARED),-DCMS_DLL_BUILD) -DCMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT"
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_PROGRAMS)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_PROGRAMS)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_PROGRAMS)
 endef
 
 # disable largefile support, we rely on vips for that and ImageMagick's
@@ -465,7 +465,7 @@ define imagemagick_BUILD
         --disable-openmp \
         --disable-deprecated
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_CRUFT)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_CRUFT)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_CRUFT)
 endef
 
 # WITH_TURBOJPEG=OFF turns off a library we don't use (we just use the
@@ -479,7 +479,7 @@ define libjpeg-turbo_BUILD
         -DCMAKE_ASM_NASM_COMPILER='$(PREFIX)/$(BUILD)/bin/nasm' \
         '$(SOURCE_DIR)'
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 endef
 
 # build with --disable-nls
@@ -492,7 +492,7 @@ define fontconfig_BUILD
         --disable-docs \
         --disable-nls
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_PROGRAMS)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_PROGRAMS)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_PROGRAMS)
 endef
 
 # disable GObject introspection
@@ -501,7 +501,7 @@ endef
 define pango_BUILD
     '$(TARGET)-meson' \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --libexecdir='bin' \
         --includedir='include' \
@@ -569,7 +569,7 @@ define poppler_BUILD
         '$(SOURCE_DIR)'
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 endef
 
 # the zlib configure is a bit basic, so we'll use cmake
@@ -580,7 +580,7 @@ define zlib_BUILD
         '$(SOURCE_DIR)'
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 endef
 
 # disable the C++ API for now, we don't use it anyway
@@ -594,7 +594,7 @@ define tiff_BUILD
         '$(SOURCE_DIR)'
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 endef
 
 # disable unneeded loaders
@@ -614,7 +614,7 @@ define libwebp_BUILD
         --enable-libwebpdemux \
         CPPFLAGS="$(if $(BUILD_SHARED),-DWEBP_DLL -DWEBP_EXTERN='__declspec(dllexport)') -DWEBP_DISABLE_STATS"
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_PROGRAMS)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_PROGRAMS)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_PROGRAMS)
 endef
 
 # replace libpng12 with libpng16
@@ -661,7 +661,7 @@ define cairo_BUILD
         ax_cv_c_float_words_bigendian=no
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_PROGRAMS)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_PROGRAMS)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_PROGRAMS)
 endef
 
 # automatically generate a list of exported symbols
@@ -678,7 +678,7 @@ define giflib_BUILD_SHARED
         $(SED) -i '/^always_export_symbols=/s/=no/=yes/' '$(BUILD_DIR)/libtool')
 
     $(MAKE) -C '$(BUILD_DIR)/lib' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)/lib' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)/lib' -j 1 $(INSTALL_STRIP_LIB)
 endef
 
 define matio_BUILD
@@ -686,7 +686,7 @@ define matio_BUILD
         $(MXE_CONFIGURE_OPTS) \
         ac_cv_va_copy=C99
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_CRUFT)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_CRUFT)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_CRUFT)
 endef
 
 define matio_BUILD_SHARED
@@ -704,7 +704,7 @@ define expat_BUILD
         --without-tests \
         $(if $(BUILD_SHARED), CPPFLAGS="-DXMLIMPORT='__declspec(dllexport)'")
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB)
 endef
 
 # build a minimal libxml2, see: https://github.com/lovell/sharp-libvips/pull/92
@@ -738,7 +738,7 @@ define libxml2_BUILD
         --without-threads \
         $(if $(IS_LLVM), --disable-ld-version-script)
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)' $(MXE_DISABLE_CRUFT)
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install $(MXE_DISABLE_CRUFT)
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB) $(MXE_DISABLE_CRUFT)
     ln -sf '$(PREFIX)/$(TARGET)/bin/xml2-config' '$(PREFIX)/bin/$(TARGET)-xml2-config'
 endef
 
@@ -760,7 +760,7 @@ define glib_BUILD
     '$(TARGET)-meson' \
         --default-library=shared \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --bindir='bin' \
         --libexecdir='bin' \
@@ -788,7 +788,7 @@ define openexr_BUILD
         $(if $(WIN32_THREADS), -DCMAKE_CXX_FLAGS='$(CXXFLAGS) -I$(PREFIX)/$(TARGET)/include/mingw-std-threads') \
         '$(SOURCE_DIR)/OpenEXR'
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 endef
 
 # build with CMake.
@@ -804,7 +804,7 @@ define ilmbase_BUILD
         $(if $(WIN32_THREADS), -DCMAKE_CXX_FLAGS='$(CXXFLAGS) -I$(PREFIX)/$(TARGET)/include/mingw-std-threads') \
         '$(SOURCE_DIR)/IlmBase'
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 endef
 
 define cfitsio_BUILD_SHARED
@@ -814,7 +814,7 @@ define cfitsio_BUILD_SHARED
         '$(SOURCE_DIR)'
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 
     '$(TARGET)-gcc' \
         -W -Wall -Werror -ansi \
@@ -865,7 +865,7 @@ define hdf5_BUILD
         -DHDF5_GENERATE_HEADERS=OFF \
         '$(SOURCE_DIR)'
     $(MAKE) -C '$(BUILD_DIR)/cross' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)/cross' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)/cross' -j 1 $(subst -,/,$(INSTALL_STRIP_LIB))
 
     # setup cmake toolchain
     (echo 'set(HDF5_C_COMPILER_EXECUTABLE $(PREFIX)/bin/$(TARGET)-h5cc)'; \

@@ -75,12 +75,18 @@ if [ "$initialize" = true ]; then
   git apply $work_dir/patches/mxe-fixes.patch
 fi
 
+if [ "$DEBUG" = "false" ]; then
+  settings_suffix="release"
+else
+  settings_suffix="debug"
+fi
+
 if [ "$LLVM" = "true" ]; then
   # Copy LLVM settings
-  cp -f $work_dir/settings/llvm.mk $mxe_dir/settings.mk
+  cp -f $work_dir/settings/llvm-$settings_suffix.mk $mxe_dir/settings.mk
 else
   # Copy GCC settings
-  cp -f $work_dir/settings/gcc.mk $mxe_dir/settings.mk
+  cp -f $work_dir/settings/gcc-$settings_suffix.mk $mxe_dir/settings.mk
 fi
 
 # The 'plugins' variable controls which plugins are in use

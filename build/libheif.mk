@@ -25,7 +25,7 @@ define $(PKG)_BUILD
         $(if $(BUILD_STATIC), CPPFLAGS="-DLIBHEIF_STATIC_BUILD")
 
     # ensure dependencies of libheif doesn't link
-    # with __declspec(dllimport) when building a 
+    # with __declspec(dllimport) when building a
     # statically linked binary
     $(if $(BUILD_STATIC),
         $(SED) -i 's/^Cflags:.*/& -DLIBHEIF_STATIC_BUILD/' '$(BUILD_DIR)/libheif.pc')
@@ -36,5 +36,5 @@ define $(PKG)_BUILD
         $(SED) -i '/^archive_cmds=/s/\-nostdlib//g' '$(BUILD_DIR)/libtool')
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB)
 endef

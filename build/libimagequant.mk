@@ -11,7 +11,7 @@ $(PKG)_DEPS     := cc
 define $(PKG)_BUILD
     '$(TARGET)-meson' \
         --buildtype=release \
-        --strip \
+        $(if $(STRIP_LIB), --strip) \
         --libdir='lib' \
         --includedir='include' \
         $(if $(BUILD_SHARED), -Dc_args="$(CFLAGS) -DLIQ_EXPORT='extern __declspec(dllexport)'") \

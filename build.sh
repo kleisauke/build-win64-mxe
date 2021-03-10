@@ -9,6 +9,7 @@ Build libvips for Windows in a Docker container
 OPTIONS:
 	--help			Show the help and exit
 	--with-hevc		Build libheif with the HEVC-related dependencies
+	--with-debug		Build binaires with debug symbols
 	--without-llvm		Build binaires with GCC
 	--without-mozjpeg	Build binaires with libjpeg-turbo
 	--without-zlib-ng	Build binaires with vanilla zlib
@@ -46,6 +47,7 @@ EOF
 
 # Default arguments
 with_hevc=false
+with_debug=false
 with_llvm=true
 with_mozjpeg=true
 with_zlib_ng=true
@@ -57,6 +59,7 @@ while [ $# -gt 0 ]; do
   case $1 in
     -h|--help) usage 0 ;;
     --with-hevc) with_hevc=true ;;
+    --with-debug) with_debug=true ;;
     --without-llvm) with_llvm=false ;;
     --without-mozjpeg) with_mozjpeg=false ;;
     --without-zlib-ng) with_zlib_ng=false ;;
@@ -141,9 +144,10 @@ docker build -t libvips-build-win-mxe container
 docker run --rm -t \
   -u $(id -u):$(id -g) \
   -v $PWD/build:/data \
-  -e "MOZJPEG=$with_mozjpeg" \
   -e "HEVC=$with_hevc" \
+  -e "DEBUG=$with_debug" \
   -e "LLVM=$with_llvm" \
+  -e "MOZJPEG=$with_mozjpeg" \
   -e "ZLIB_NG=$with_zlib_ng" \
   libvips-build-win-mxe \
   $deps \

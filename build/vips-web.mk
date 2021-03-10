@@ -94,5 +94,5 @@ define $(PKG)_BUILD
         $(SED) -i '/\-shared /s/ \-nostdlib//' '$(BUILD_DIR)/libtool')
 
     $(MAKE) -C '$(BUILD_DIR)' -j '$(JOBS)'
-    $(MAKE) -C '$(BUILD_DIR)' -j 1 install
+    $(MAKE) -C '$(BUILD_DIR)' -j 1 $(INSTALL_STRIP_LIB)
 endef

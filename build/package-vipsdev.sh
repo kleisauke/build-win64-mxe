@@ -67,20 +67,24 @@ if [ "$type" = "static" ]; then
   zip_suffix+="-static"
 fi
 
-if [ "$MOZJPEG" = "false" ]; then
-  zip_suffix+="-libjpeg-turbo"
-fi
-
 if [ "$HEVC" = "true" ]; then
   zip_suffix+="-hevc"
 fi
 
-if [ "$ZLIB_NG" = "false" ]; then
-  zip_suffix+="-zlib-vanilla"
+if [ "$DEBUG" = "true" ]; then
+  zip_suffix+="-debug"
 fi
 
 if [ "$LLVM" = "false" ]; then
   zip_suffix+="-gcc"
+fi
+
+if [ "$MOZJPEG" = "false" ]; then
+  zip_suffix+="-libjpeg-turbo"
+fi
+
+if [ "$ZLIB_NG" = "false" ]; then
+  zip_suffix+="-zlib-vanilla"
 fi
 
 echo "Copying libvips and dependencies"
@@ -137,7 +141,9 @@ cp $mxe_prefix/$target.$deps/bin/{vips,vipsedit,vipsheader,vipsthumbnail}.exe $r
 echo "Strip unneeded symbols"
 
 # Remove all symbols that are not needed
-$mxe_prefix/bin/$target.$deps-strip --strip-unneeded $repackage_dir/bin/*.{exe,dll}
+if [ "$DEBUG" = "false" ]; then
+  $mxe_prefix/bin/$target.$deps-strip --strip-unneeded $repackage_dir/bin/*.{exe,dll}
+fi
 
 echo "Copying packaging files"
 
