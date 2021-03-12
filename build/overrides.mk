@@ -836,6 +836,7 @@ define hdf5_BUILD
         -DHDF5_BUILD_TOOLS=OFF \
         -DHDF5_BUILD_EXAMPLES=OFF \
         -DHDF5_BUILD_HL_LIB=OFF \
+        -DHDF5_BUILD_CPP_LIB=OFF \
         -DHDF5_GENERATE_HEADERS=OFF \
         '$(SOURCE_DIR)'
     $(MAKE) -C '$(BUILD_DIR)/native' -j '$(JOBS)' gen_hdf5-$(if $(BUILD_STATIC),static,shared)
@@ -862,6 +863,7 @@ define hdf5_BUILD
         -DHDF5_BUILD_TOOLS=OFF \
         -DHDF5_BUILD_EXAMPLES=OFF \
         -DHDF5_BUILD_HL_LIB=OFF \
+        -DHDF5_BUILD_CPP_LIB=OFF \
         -DHDF5_GENERATE_HEADERS=OFF \
         '$(SOURCE_DIR)'
     $(MAKE) -C '$(BUILD_DIR)/cross' -j '$(JOBS)'
