@@ -70,7 +70,7 @@ endef
 define $(PKG)_BUILD
     $($(PKG)_PRE_CONFIGURE)
 
-    cd '$(BUILD_DIR)' && $(SOURCE_DIR)/configure \
+    cd '$(BUILD_DIR)' && $(SOURCE_DIR)/autogen.sh \
         $(MXE_CONFIGURE_OPTS) \
         --enable-debug=no \
         --without-pdfium \

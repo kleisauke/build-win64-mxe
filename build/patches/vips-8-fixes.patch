@@ -1,0 +1,343 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kleis Auke Wolthuizen <github@kleisauke.nl>
+Date: Fri, 12 Mar 2021 12:57:36 +0100
+Subject: [PATCH 1/2] Ensure max_band vector is aligned on a 16-byte boundary
+
+See https://github.com/mstorsjo/llvm-mingw/issues/190
+
+diff --git a/libvips/conversion/composite.cpp b/libvips/conversion/composite.cpp
+index 1111111..2222222 100644
+--- a/libvips/conversion/composite.cpp
++++ b/libvips/conversion/composite.cpp
+@@ -130,12 +130,6 @@ typedef struct _VipsCompositeBase {
+ 	 */
+ 	gboolean skippable;
+ 
+-#ifdef HAVE_VECTOR_ARITH
+-	/* max_band as a vector, for the RGBA case.
+-	 */
+-	v4f max_band_vec;
+-#endif /*HAVE_VECTOR_ARITH*/
+-
+ } VipsCompositeBase;
+ 
+ typedef VipsConversionClass VipsCompositeBaseClass;
+@@ -194,6 +188,16 @@ typedef struct {
+ 	 */
+ 	VipsPel **p;
+ 
++#ifdef HAVE_VECTOR_ARITH
++	/* A pointer to the 'real' memory.
++	 */
++	void *mem;
++
++	/* max_band as a vector, for the RGBA case.
++	 */
++	v4f max_band_vec;
++#endif /*HAVE_VECTOR_ARITH*/
++
+ } VipsCompositeSequence;
+ 
+ static int
+@@ -216,7 +220,14 @@ vips_composite_stop( void *vseq, void *a, void *b )
+ 	VIPS_FREE( seq->enabled );
+ 	VIPS_FREE( seq->p );
+ 
++#ifdef HAVE_VECTOR_ARITH
++	/* Must use g_free here, otherwise we end up writing to a
++	 * pointer that we just freed.
++	 */
++	g_free( seq->mem );
++#else /*!defined(HAVE_VECTOR_ARITH)*/
+ 	VIPS_FREE( seq );
++#endif /*HAVE_VECTOR_ARITH*/
+ 
+ 	return( 0 );
+ }
+@@ -227,12 +238,38 @@ vips_composite_start( VipsImage *out, void *a, void *b )
+ 	VipsImage **in = (VipsImage **) a;
+ 	VipsCompositeBase *composite = (VipsCompositeBase *) b;
+ 
++	void *mem;
+ 	VipsCompositeSequence *seq;
+-	int i, n;
++	int i, n, size;
+ 
+-	if( !(seq = VIPS_NEW( NULL, VipsCompositeSequence )) )
++	/* The size of our struct.
++	 */
++	size = sizeof( VipsCompositeSequence );
++
++#ifdef HAVE_VECTOR_ARITH
++	/* Ensure that the memory is aligned on a 16-byte boundary.
++	 */
++	size += 16 - 1;
++#endif /*HAVE_VECTOR_ARITH*/
++
++	/* Allocate a new chunk of memory.
++	 */
++	if( !(mem = vips_malloc( NULL, size )) )
+ 		return( NULL );
+ 
++#ifdef HAVE_VECTOR_ARITH
++	/* Our aligned pointer.
++	 */
++	seq = (VipsCompositeSequence *)
++		(((guintptr) mem + 15) & ~(guintptr) 0x0F);
++
++	/* Store the pointer to the 'real' memory.
++	 */
++	seq->mem = mem;
++#else /*!defined(HAVE_VECTOR_ARITH)*/
++	seq = (VipsCompositeSequence *) mem;
++#endif /*HAVE_VECTOR_ARITH*/
++
+ 	seq->composite = composite;
+ 	seq->input_regions = NULL;
+ 	seq->enabled = NULL;
+@@ -280,7 +317,19 @@ vips_composite_start( VipsImage *out, void *a, void *b )
+ 			return( NULL );
+ 		}
+ 	}
+-	
++
++#ifdef HAVE_VECTOR_ARITH
++	/* We need a float version for the vector path.
++	 */
++	if( composite->bands == 3 )
++		seq->max_band_vec = (v4f){
++			(float) composite->max_band[0],
++			(float) composite->max_band[1],
++			(float) composite->max_band[2],
++			(float) composite->max_band[3]
++		};
++#endif
++
+ 	return( seq );
+ }
+ 
+@@ -664,9 +713,11 @@ vips_composite_base_blend( VipsCompositeBase *composite,
+  */
+ template <typename T>
+ static void
+-vips_composite_base_blend3( VipsCompositeBase *composite, 
++vips_composite_base_blend3( VipsCompositeSequence *seq,
+ 	VipsBlendMode mode, v4f &B, T * restrict p )
+ {
++	VipsCompositeBase *composite = seq->composite;
++
+ 	v4f A;
+ 	float aA;
+ 	float aB;
+@@ -684,7 +735,7 @@ vips_composite_base_blend3( VipsCompositeBase *composite,
+ 	A[2] = p[2];
+ 	A[3] = p[3];
+ 
+-	A /= composite->max_band_vec;
++	A /= seq->max_band_vec;
+ 
+ 	aA = A[3];
+ 	aB = B[3];
+@@ -975,7 +1026,7 @@ vips_combine_pixels3( VipsCompositeSequence *seq, VipsPel *q )
+ 
+ 	/* Scale the base pixel to 0 - 1.
+ 	 */
+-	B /= composite->max_band_vec;
++	B /= seq->max_band_vec;
+ 	aB = B[3];
+ 
+ 	if( !composite->premultiplied ) {
+@@ -987,7 +1038,7 @@ vips_combine_pixels3( VipsCompositeSequence *seq, VipsPel *q )
+ 		int j = seq->enabled[i];
+ 		VipsBlendMode m = n_mode == 1 ? mode[0] : mode[j - 1];
+ 
+-		vips_composite_base_blend3<T>( composite, m, B, tp[i] ); 
++		vips_composite_base_blend3<T>( seq, m, B, tp[i] );
+ 	}
+ 
+ 	/* Unpremultiply, if necessary.
+@@ -1006,7 +1057,7 @@ vips_combine_pixels3( VipsCompositeSequence *seq, VipsPel *q )
+ 
+ 	/* Write back as a full range pixel, clipping to range.
+ 	 */
+-	B *= composite->max_band_vec;
++	B *= seq->max_band_vec;
+ 	if( min_T != 0 || 
+ 		max_T != 0 ) {
+ 		float low = min_T;
+@@ -1386,14 +1437,6 @@ vips_composite_base_build( VipsObject *object )
+ 		return( -1 ); 
+ 	}
+ 
+-#ifdef HAVE_VECTOR_ARITH
+-	/* We need a float version for the vector path.
+-	 */
+-	if( composite->bands == 3 ) 
+-		for( int b = 0; b <= 3; b++ )
+-			composite->max_band_vec[b] = composite->max_band[b];
+-#endif /*HAVE_VECTOR_ARITH*/
+-
+ 	/* Transform the input images to match in format. We may have
+ 	 * mixed float and double, for example.  
+ 	 */
+
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kleis Auke Wolthuizen <github@kleisauke.nl>
+Date: Mon, 15 Mar 2021 11:10:16 +0100
+Subject: [PATCH 2/2] Use cross-platform functions for allocating aligned
+ memory
+
+A malloc library is expected to provide a better implementation.
+
+diff --git a/configure.ac b/configure.ac
+index 1111111..2222222 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -409,7 +409,7 @@ fi
+ AC_FUNC_MEMCMP
+ AC_FUNC_MMAP
+ AC_FUNC_VPRINTF
+-AC_CHECK_FUNCS([getcwd gettimeofday getwd memset munmap putenv realpath strcasecmp strchr strcspn strdup strerror strrchr strspn vsnprintf realpath mkstemp mktemp random rand sysconf atexit])
++AC_CHECK_FUNCS([getcwd gettimeofday getwd memset munmap putenv realpath strcasecmp strchr strcspn strdup strerror strrchr strspn vsnprintf realpath mkstemp mktemp random rand sysconf atexit _aligned_malloc posix_memalign memalign])
+ AC_CHECK_LIB(m,cbrt,[AC_DEFINE(HAVE_CBRT,1,[have cbrt() in libm.])])
+ AC_CHECK_LIB(m,hypot,[AC_DEFINE(HAVE_HYPOT,1,[have hypot() in libm.])])
+ AC_CHECK_LIB(m,atan2,[AC_DEFINE(HAVE_ATAN2,1,[have atan2() in libm.])])
+diff --git a/libvips/conversion/composite.cpp b/libvips/conversion/composite.cpp
+index 1111111..2222222 100644
+--- a/libvips/conversion/composite.cpp
++++ b/libvips/conversion/composite.cpp
+@@ -55,13 +55,17 @@
+ 
+ #include <stdio.h>
+ #include <string.h>
+-#if _MSC_VER
++#ifdef _MSC_VER
+ #include <cstdlib>
+ #else
+ #include <stdlib.h>
+ #endif
+ #include <math.h>
+ 
++#if defined(HAVE__ALIGNED_MALLOC) || defined(HAVE_MEMALIGN)
++#include <malloc.h>
++#endif
++
+ #include <vips/vips.h>
+ #include <vips/internal.h>
+ #include <vips/debug.h>
+@@ -159,7 +163,8 @@ vips_composite_base_dispose( GObject *gobject )
+ 	G_OBJECT_CLASS( vips_composite_base_parent_class )->dispose( gobject );
+ }
+ 
+-/* Our sequence value.
++/* Our sequence value. This must be aligned on a 16-byte boundary when
++ * HAVE_VECTOR_ARITH is defined.
+  */
+ typedef struct {
+ 	VipsCompositeBase *composite;
+@@ -189,10 +194,6 @@ typedef struct {
+ 	VipsPel **p;
+ 
+ #ifdef HAVE_VECTOR_ARITH
+-	/* A pointer to the 'real' memory.
+-	 */
+-	void *mem;
+-
+ 	/* max_band as a vector, for the RGBA case.
+ 	 */
+ 	v4f max_band_vec;
+@@ -200,6 +201,39 @@ typedef struct {
+ 
+ } VipsCompositeSequence;
+ 
++#ifdef HAVE_VECTOR_ARITH
++/* Allocate aligned memory. The return value can be released
++ * by calling the vips_free_aligned() function, for example:
++ * VIPS_FREEF( vips_free_aligned, ptr );
++ */
++static inline void *
++vips_alloc_aligned( size_t sz, size_t align )
++{
++	g_assert( !(align & (align - 1)) );
++#ifdef HAVE__ALIGNED_MALLOC
++	return _aligned_malloc( sz, align );
++#elif defined(HAVE_POSIX_MEMALIGN)
++	void *ptr;
++	if( posix_memalign( &ptr, align, sz ) ) return NULL;
++	return ptr;
++#elif defined(HAVE_MEMALIGN)
++	return memalign( align, sz );
++#else
++#error Missing aligned alloc implementation
++#endif
++}
++
++static inline void
++vips_free_aligned( void* ptr )
++{
++#ifdef HAVE__ALIGNED_MALLOC
++	_aligned_free( ptr );
++#else /*defined(HAVE_POSIX_MEMALIGN) || defined(HAVE_MEMALIGN)*/
++	free( ptr );
++#endif
++}
++#endif /*HAVE_VECTOR_ARITH*/
++
+ static int
+ vips_composite_stop( void *vseq, void *a, void *b )
+ {
+@@ -221,10 +255,7 @@ vips_composite_stop( void *vseq, void *a, void *b )
+ 	VIPS_FREE( seq->p );
+ 
+ #ifdef HAVE_VECTOR_ARITH
+-	/* Must use g_free here, otherwise we end up writing to a
+-	 * pointer that we just freed.
+-	 */
+-	g_free( seq->mem );
++	VIPS_FREEF( vips_free_aligned, seq );
+ #else /*!defined(HAVE_VECTOR_ARITH)*/
+ 	VIPS_FREE( seq );
+ #endif /*HAVE_VECTOR_ARITH*/
+@@ -238,37 +269,18 @@ vips_composite_start( VipsImage *out, void *a, void *b )
+ 	VipsImage **in = (VipsImage **) a;
+ 	VipsCompositeBase *composite = (VipsCompositeBase *) b;
+ 
+-	void *mem;
+ 	VipsCompositeSequence *seq;
+-	int i, n, size;
+-
+-	/* The size of our struct.
+-	 */
+-	size = sizeof( VipsCompositeSequence );
++	int i, n;
+ 
+ #ifdef HAVE_VECTOR_ARITH
+ 	/* Ensure that the memory is aligned on a 16-byte boundary.
+ 	 */
+-	size += 16 - 1;
+-#endif /*HAVE_VECTOR_ARITH*/
+-
+-	/* Allocate a new chunk of memory.
+-	 */
+-	if( !(mem = vips_malloc( NULL, size )) )
+-		return( NULL );
+-
+-#ifdef HAVE_VECTOR_ARITH
+-	/* Our aligned pointer.
+-	 */
+-	seq = (VipsCompositeSequence *)
+-		(((guintptr) mem + 15) & ~(guintptr) 0x0F);
+-
+-	/* Store the pointer to the 'real' memory.
+-	 */
+-	seq->mem = mem;
++	if( !(seq = ((VipsCompositeSequence *) vips_alloc_aligned(
++		sizeof( VipsCompositeSequence ), 16 ))) )
+ #else /*!defined(HAVE_VECTOR_ARITH)*/
+-	seq = (VipsCompositeSequence *) mem;
++	if( !(seq = VIPS_NEW( NULL, VipsCompositeSequence )) )
+ #endif /*HAVE_VECTOR_ARITH*/
++		return( NULL );
+ 
+ 	seq->composite = composite;
+ 	seq->input_regions = NULL;

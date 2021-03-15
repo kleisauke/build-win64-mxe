@@ -58,7 +58,7 @@ define $(PKG)_BUILD
 
     # Always build as shared library, we need
     # libvips-42.dll for the language bindings.
-    cd '$(BUILD_DIR)' && $(SOURCE_DIR)/configure \
+    cd '$(BUILD_DIR)' && $(SOURCE_DIR)/autogen.sh \
         --host='$(TARGET)' \
         --build='$(BUILD)' \
         --prefix='$(PREFIX)/$(TARGET)' \
