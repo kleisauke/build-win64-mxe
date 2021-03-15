@@ -25,7 +25,7 @@ Run the top-level [build script](build.sh) with the `--help` parameter for help.
 | [fribidi]       | 1.0.10    | LGPLv3                                                       |
 | [gdk-pixbuf]    | 2.42.2    | LGPLv3                                                       |
 | [giflib]        | 5.1.4     | MIT Licence                                                  |
-| [glib]          | 2.67.5    | LGPLv3                                                       |
+| [glib]          | 2.67.6    | LGPLv3                                                       |
 | [harfbuzz]      | 2.7.4     | MIT Licence                                                  |
 | [lcms]          | 2.12      | MIT Licence                                                  |
 | [libexif]       | 0.6.22    | LGPLv3                                                       |
@@ -42,7 +42,7 @@ Run the top-level [build script](build.sh) with the `--help` parameter for help.
 | [libxml2]       | 2.9.10    | MIT Licence                                                  |
 | [mozjpeg]       | 4.0.3     | [zlib License, IJG License, BSD-3-Clause]                    |
 | [orc]           | 0.4.32    | [orc License] (BSD-like)                                     |
-| [pango]         | 1.48.2    | LGPLv3                                                       |
+| [pango]         | 1.48.3    | LGPLv3                                                       |
 | [pixman]        | 0.40.0    | MIT Licence                                                  |
 | [zlib-ng]       | 2.0.0²    | [zlib-ng Licence]                                            |
 
@@ -95,7 +95,7 @@ Same as libvips-web + these extra dependencies:
 | [cfitsio]       | 3.49      | BSD-like                                                     |
 | [fftw]          | 3.3.9     | GPLv2                                                        |
 | [hdf5]          | 1.12.0    | BSD-like                                                     |
-| [imagemagick]   | 6.9.12-2  | [ImageMagick License] (GPL-like)                             |
+| [imagemagick]   | 6.9.12-3  | [ImageMagick License] (GPL-like)                             |
 | [matio]         | 1.5.19    | BSD 2-Clause                                                 |
 | [nifticlib]     | 2.0.0     | Public domain                                                |
 | [openexr]       | 2.5.5     | BSD 3-Clause                                                 |

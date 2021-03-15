@@ -42,7 +42,7 @@ diff --git a/meson.build b/meson.build
 index 1111111..2222222 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -2031,40 +2031,17 @@ endif
+@@ -2037,40 +2037,17 @@ endif
  # proxy-libintl subproject.
  # FIXME: glib-gettext.m4 has much more checks to detect broken/uncompatible
  # implementations. This could be extended if issues are found in some platforms.
@@ -95,7 +95,7 @@ diff --git a/gio/tests/meson.build b/gio/tests/meson.build
 index 1111111..2222222 100644
 --- a/gio/tests/meson.build
 +++ b/gio/tests/meson.build
-@@ -438,7 +438,7 @@ gdbus_example_objectmanager_sources = files(
+@@ -453,7 +453,7 @@ gdbus_example_objectmanager_sources = files(
    'gdbus-example-objectmanager-server.c',
  )
  
@@ -104,7 +104,7 @@ index 1111111..2222222 100644
    test_extra_programs += {
      # These three are manual-run tests because they need a session bus but don't bring one up themselves
      # FIXME: these build but don't seem to work!
-@@ -552,7 +552,7 @@ if installed_tests_enabled
+@@ -567,7 +567,7 @@ if installed_tests_enabled
    endforeach
  endif
  
